@@ -1,5 +1,7 @@
 package com.sf.coworkercommunicator.mail;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -12,28 +14,35 @@ import javax.mail.internet.MimeMessage;
 
 public class Mailer {
 
-	private static String username = "sf.coworker.communicator@gmail.com";
-	private static String password = "scrummybears";
+	private String username = "sf.coworker.communicator@gmail.com";
+	private String password = "scrummybears";
+	private String subject = "testSubject";
+	private static Map<String, String> emailAddresses;
+	
+	static {
+		emailAddresses = new HashMap<String, String>();
+		emailAddresses.put("nick", "nick.jordan.ec4t@statefarm.com");
+	}
 
-
-	public static void main(String[] args) {
-		
+	public boolean sendMessage(String recipient, String text) {
+		String recipientEmail = emailAddresses.get(recipient.toLowerCase());
 		try {
-			sendMessage("nick.jordan.ec4t@statefarm.com", "subject", "text");
+			sendMessage(recipientEmail, subject, text);
 			System.out.println("Done");
+			return true;
 		} catch (MessagingException e) {
 			System.out.println("ERROR : did not send message");
 			e.printStackTrace();
+			return false;
 		}
-		
 	}
 
-	private static void sendMessage(String recipient, String subject, String text) throws MessagingException {
+	private  void sendMessage(String recipient, String subject, String text) throws MessagingException {
 		Message message = buildMessage(recipient, subject, text);
 		Transport.send(message);
 	}
 
-	private static Message buildMessage(String recipient, String subject, String text) {
+	private  Message buildMessage(String recipient, String subject, String text) {
 		Session session = getSession();
 		try {
 			Message message = new MimeMessage(session);
@@ -47,7 +56,7 @@ public class Mailer {
 		}
 	}
 
-	private static Session getSession() {
+	private  Session getSession() {
 		return Session.getInstance(buildProperties(), new javax.mail.Authenticator() {
 		protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(username, password);
@@ -55,7 +64,7 @@ public class Mailer {
 		});
 	}
 	
-	private static Properties buildProperties() {
+	private  Properties buildProperties() {
 		Properties props = new Properties();
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.auth", "true");
