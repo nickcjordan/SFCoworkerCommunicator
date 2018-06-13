@@ -27,12 +27,8 @@ import com.amazon.speech.ui.SimpleCard;
 import com.sf.coworkercommunicator.mail.Mailer;
 import com.amazon.speech.ui.OutputSpeech;
 
-/**
- * This sample shows how to create a simple speechlet for handling speechlet
- * requests.
- */
-public class HelloWorldSpeechlet implements SpeechletV2 {
-	private static final Logger log = LoggerFactory.getLogger(HelloWorldSpeechlet.class);
+public class CoworkerCommunicatorSpeechlet implements SpeechletV2 {
+	private static final Logger log = LoggerFactory.getLogger(CoworkerCommunicatorSpeechlet.class);
 
 	@Override
 	public void onSessionStarted(SpeechletRequestEnvelope<SessionStartedRequest> requestEnvelope) {
@@ -49,24 +45,29 @@ public class HelloWorldSpeechlet implements SpeechletV2 {
 	@Override
 	public SpeechletResponse onIntent(SpeechletRequestEnvelope<IntentRequest> requestEnvelope) {
 		IntentRequest request = requestEnvelope.getRequest();
-
 		Intent intent = request.getIntent();
 		
 		String recipient = intent.getSlot("recipient").getValue();
-		String message = intent.getSlot("message").getValue();
+//		String message = intent.getSlot("message").getValue(); TODO use this for custom message value
+		String id = intent.getSlot("message").getResolutions().getResolutionsPerAuthority().get(0).getValueWrappers().get(0).getValue().getId();
 		
 		String intentName = (intent != null) ? intent.getName() : null;
 
 		log.info("onIntent requestId={}, sessionId={}, intentName={}", request.getRequestId(), requestEnvelope.getSession().getSessionId(), intentName);
 		
 		if ("MessageIntent".equals(intentName)) {
-			return sendEmail(recipient, message);
+			return sendEmail(recipient, id);
 		} else if ("AMAZON.HelpIntent".equals(intentName)) {
 			return getHelpResponse();
 		} else {
-			return getAskResponse("HelloWorldTest",
-					"This is unsupported.  Please try something else. intent name : " + intentName + "\nintent: " + intent.toString() + "\nrequest: " + request.toString());
+			return getAskResponse("HelloWorldTest", "This is unsupported.  Please try something else. intent name : " + intentName);
 		}
+	}
+	
+	private SpeechletResponse sendEmail(String recipient, String id) {
+		boolean success = new Mailer().sendMessage(recipient, id);
+		PlainTextOutputSpeech speech = success ? getPlainTextOutputSpeech("A \"" + id + "\" email has been sent to " + recipient) : getPlainTextOutputSpeech("Error sending message to " + recipient);
+		return SpeechletResponse.newTellResponse(speech);
 	}
 
 	@Override
@@ -83,23 +84,6 @@ public class HelloWorldSpeechlet implements SpeechletV2 {
 	private SpeechletResponse getWelcomeResponse() {
 		String speechText = "Welcome to the Alexa Skills Kit, you can say hello";
 		return getAskResponse("HelloWorld", speechText);
-	}
-
-	/**
-	 * Creates a {@code SpeechletResponse} for the hello intent.
-	 * @param message 
-	 * @param recipient 
-	 *
-	 * @return SpeechletResponse spoken and visual response for the given intent
-	 */
-	private SpeechletResponse sendEmail(String recipient, String message) {
-		boolean success = new Mailer().sendMessage(recipient, message);
-		// Create the Simple card content.
-//		SimpleCard card = getSimpleCard("HelloWorld", speechText);
-
-		// Create the plain text output.
-		PlainTextOutputSpeech speech = success ? getPlainTextOutputSpeech("Message has been sent to " + recipient) : getPlainTextOutputSpeech("Error sending message to " + recipient);
-		return SpeechletResponse.newTellResponse(speech);
 	}
 
 	/**

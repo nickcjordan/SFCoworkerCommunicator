@@ -16,18 +16,13 @@ public class Mailer {
 
 	private String username = "sf.coworker.communicator@gmail.com";
 	private String password = "scrummybears";
-	private String subject = "testSubject";
-	private static Map<String, String> emailAddresses;
-	
-	static {
-		emailAddresses = new HashMap<String, String>();
-		emailAddresses.put("nick", "nick.jordan.ec4t@statefarm.com");
-	}
 
-	public boolean sendMessage(String recipient, String text) {
-		String recipientEmail = emailAddresses.get(recipient.toLowerCase());
+
+	public boolean sendMessage(String recipient, String id) {
+		
 		try {
-			sendMessage(recipientEmail, subject, text);
+			EmailMessage message = MessageMap.getMessage(id, recipient);
+			sendMessage(message);
 			System.out.println("Done");
 			return true;
 		} catch (MessagingException e) {
@@ -37,9 +32,8 @@ public class Mailer {
 		}
 	}
 
-	private  void sendMessage(String recipient, String subject, String text) throws MessagingException {
-		Message message = buildMessage(recipient, subject, text);
-		Transport.send(message);
+	private void sendMessage(EmailMessage email) throws MessagingException {
+		Transport.send(buildMessage(email.getRecipient(), email.getSubject(), email.getMessage()));
 	}
 
 	private  Message buildMessage(String recipient, String subject, String text) {
