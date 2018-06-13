@@ -15,9 +15,9 @@ public class MessageMap {
 		emailAddresses.put("scrum master", "mamunor.rashid.e0lo@statefarm.com");
 	}
 	
-	public static EmailMessage getMessage(String id, String recipient) {
+	public static EmailMessage getMessage(String id, String recipient, String sender) {
 		BasicMessage message = BasicMessage.getMessageFromCode(id);
-		return new EmailMessage(recipient.toLowerCase(), message);
+		return new EmailMessage(emailAddresses.get(recipient.toLowerCase()), sender, message);
 	}
 
 }

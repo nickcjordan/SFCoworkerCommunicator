@@ -24,6 +24,7 @@ import com.amazon.speech.json.SpeechletRequestEnvelope;
 import com.amazon.speech.ui.PlainTextOutputSpeech;
 import com.amazon.speech.ui.Reprompt;
 import com.amazon.speech.ui.SimpleCard;
+import com.sf.coworkercommunicator.mail.EmailMessage;
 import com.sf.coworkercommunicator.mail.Mailer;
 import com.amazon.speech.ui.OutputSpeech;
 
@@ -48,7 +49,7 @@ public class CoworkerCommunicatorSpeechlet implements SpeechletV2 {
 		Intent intent = request.getIntent();
 		
 		String recipient = intent.getSlot("recipient").getValue();
-//		String message = intent.getSlot("message").getValue(); TODO use this for custom message value
+		String sender = intent.getSlot("sender").getValue();
 		String id = intent.getSlot("message").getResolutions().getResolutionsPerAuthority().get(0).getValueWrappers().get(0).getValue().getId();
 		
 		String intentName = (intent != null) ? intent.getName() : null;
@@ -56,7 +57,7 @@ public class CoworkerCommunicatorSpeechlet implements SpeechletV2 {
 		log.info("onIntent requestId={}, sessionId={}, intentName={}", request.getRequestId(), requestEnvelope.getSession().getSessionId(), intentName);
 		
 		if ("MessageIntent".equals(intentName)) {
-			return sendEmail(recipient, id);
+			return sendEmail(recipient, sender, id);
 		} else if ("AMAZON.HelpIntent".equals(intentName)) {
 			return getHelpResponse();
 		} else {
@@ -64,9 +65,9 @@ public class CoworkerCommunicatorSpeechlet implements SpeechletV2 {
 		}
 	}
 	
-	private SpeechletResponse sendEmail(String recipient, String id) {
-		boolean success = new Mailer().sendMessage(recipient, id);
-		PlainTextOutputSpeech speech = success ? getPlainTextOutputSpeech("A \"" + id + "\" email has been sent to " + recipient) : getPlainTextOutputSpeech("Error sending message to " + recipient);
+	private SpeechletResponse sendEmail(String recipient, String sender, String id) {
+		EmailMessage result = new Mailer().sendMessage(recipient, sender, id);
+		PlainTextOutputSpeech speech = (result == null) ? getPlainTextOutputSpeech("Error sending message to " + recipient) : getPlainTextOutputSpeech("A \"" + result.getSpokenText() + "\" email has been sent to " + recipient + " from " + sender);
 		return SpeechletResponse.newTellResponse(speech);
 	}
 

@@ -3,17 +3,19 @@ package com.sf.coworkercommunicator.mail;
 public class EmailMessage {
 	
 	private String recipient;
+	private String sender;
 	private String code;
 	private String spokenText;
 	private String subject;
 	private String message;
 	
-	public EmailMessage(String recipient, BasicMessage m) {
+	public EmailMessage(String recipient, String sender, BasicMessage m) {
 		super();
 		this.recipient = recipient;
 		this.code = m.getCode();
 		this.spokenText = m.getSpokenText();
 		this.subject = m.getSubject();
+		this.sender = sender;
 		this.message = m.getText();
 	}
 
@@ -23,6 +25,14 @@ public class EmailMessage {
 
 	public void setRecipient(String recipient) {
 		this.recipient = recipient;
+	}
+
+	public String getSender() {
+		return sender;
+	}
+
+	public void setSender(String sender) {
+		this.sender = sender;
 	}
 
 	public String getCode() {

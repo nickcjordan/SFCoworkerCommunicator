@@ -18,32 +18,32 @@ public class Mailer {
 	private String password = "scrummybears";
 
 
-	public boolean sendMessage(String recipient, String id) {
+	public EmailMessage sendMessage(String recipient, String sender, String id) {
 		
 		try {
-			EmailMessage message = MessageMap.getMessage(id, recipient);
+			EmailMessage message = MessageMap.getMessage(id, recipient, sender);
 			sendMessage(message);
 			System.out.println("Done");
-			return true;
+			return message;
 		} catch (MessagingException e) {
 			System.out.println("ERROR : did not send message");
 			e.printStackTrace();
-			return false;
+			return null;
 		}
 	}
 
 	private void sendMessage(EmailMessage email) throws MessagingException {
-		Transport.send(buildMessage(email.getRecipient(), email.getSubject(), email.getMessage()));
+		Transport.send(buildMessage(email.getRecipient(), email.getSender(), email.getSubject(), email.getMessage()));
 	}
 
-	private  Message buildMessage(String recipient, String subject, String text) {
+	private  Message buildMessage(String recipient, String sender, String subject, String text) {
 		Session session = getSession();
 		try {
 			Message message = new MimeMessage(session);
 			message.setFrom(new InternetAddress(username));
 			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
 			message.setSubject(subject);
-			message.setText(text);
+			message.setText(text + "\n\nMessage sent from " + sender);
 			return message;
 		} catch (MessagingException e) {
 			throw new RuntimeException(e);
